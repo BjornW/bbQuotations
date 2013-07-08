@@ -381,7 +381,7 @@ jQuery(document).ready(function($){$('#save-post').remove();});
       $html .= wp_nonce_field($action = 'bbquotations-source', $name = "bbquotations_wpnonce", $referer = true , $echo = false);
       $html .= "<table class='form-table'>\n"; 
       $html .= "<tr>\n";
-      $html .= "<th style='width:20%'><label for='bbquotations-source-url'>" . __("Quote source url (optional)") . "</label></th>";
+      $html .= "<th style='width:20%'><label for='bbquotations-source-url'>" . __("Quote source url (optional). Empty will automatically link to author profile") . "</label></th>";
       $html .= "<td>";
       $html .= "<input type='text' name='bbquotations-source-url' id='bbquotations-source-url' value='$source' size='30' style='width:97%' />"; 
       $html .= '</td>';
@@ -400,7 +400,7 @@ jQuery(document).ready(function($){$('#save-post').remove();});
       $html .="<li> -" . __('Use the content for the quote itself.<br /> For example: Merde, I think I have lost the battle', 
         $this->localization_domain) . "</li>";
 
-      $html .="<li> -" . __('Optionally use the <em>Quote source url</em> to add an url to the source.', 
+      $html .="<li> -" . __('Optionally use the <em>Quote source url</em> to add an url to the source. Leave empty to use the author profile.', 
         $this->localization_domain) . "</li>";
       $html .= "</ul>";
       $html .= "</div>";
@@ -465,8 +465,13 @@ jQuery(document).ready(function($){$('#save-post').remove();});
       if( is_object($quote) ) {
         $source_url = get_post_meta($id, 'bbquotations-source-url', true);
         // add the source url if available
-        $link = empty($source_url) ? $quote->post_title : "<a href='$source_url'>$quote->post_title</a>"; 
-        
+        // or else link to the author of the quote 
+        if( empty($source_url) ) {
+          $url = get_author_posts_url($quote->post_author);
+          $link = "<a href='$url'>$quote->post_title</a>"; 
+        } else {
+          $link = "<a href='$source_url'>$quote->post_title</a>"; 
+        }
         $html .= "<blockquote class='bbquotations' cite='$link'>";
         $html .= "<p>";
         $html .= $quote->post_content;
