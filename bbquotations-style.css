@@ -1,0 +1,12 @@
+blockquote.bbquotations {
+  background: #eeeeee;
+  border: none;
+  font-size: 0.8em;
+  font-style: italic;
+  margin: 0.9375em 1.875em 0;
+  padding: 0.9375em;
+}
+
+blockquote.bbquotations cite {
+  text-align: right;
+}
