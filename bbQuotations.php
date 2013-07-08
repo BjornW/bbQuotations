@@ -4,11 +4,11 @@ Plugin Name: bbQuotations
 Plugin URI: http://www.burobjorn.nl
 Description: bbQuotations adds Quotes as a custom post type to WordPress
 Author: Bjorn Wijers <burobjorn at burobjorn dot nl> 
-Version: 1.0
+Version: 1.1
 Author URI: http://www.burobjorn.nl
 *******************************************************************************/   
    
-/*  Copyright 2011
+/*  Copyright 2011-2013
   
 
 bbQuotations is free software; you can redistribute it and/or modify
