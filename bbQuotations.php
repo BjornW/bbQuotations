@@ -55,15 +55,7 @@ if ( ! class_exists('bbQuotations')) {
     */
     var $options = array();
 
-    /**add_action( 'admin_print_footer_scripts', 'remove_save_button' );
-function remove_save_button()
-{   
-?>
-<script>
-jQuery(document).ready(function($){$('#save-post').remove();});
-</script><?php
-}
-     * @var string $custom_post_type_name
+    /* @var string $custom_post_type_name
      */
     var $custom_post_type_name = 'bbquote';
     
@@ -184,7 +176,7 @@ jQuery(document).ready(function($){$('#save-post').remove();});
 
     function remove_row_actions( $actions )
     {
-      if( get_post_type() === 'bbquote' ) {
+      if( get_post_type() === $this->custom_post_type_name ) {
         unset( $actions['view'] );
       }
       return $actions;
@@ -392,7 +384,7 @@ jQuery(document).ready(function($){$('#save-post').remove();});
 
     function add_cheatsheet_metabox() 
     {
-      $html .= "<div>"; 
+      $html = "<div>"; 
       $html .= "<ul>";
       $html .="<li> -" . __('Use the title for the source of the quote.<br /> For example: Napoleon Boneparte, Battle of Waterloo 18 june 1815', 
         $this->localization_domain) . "</li>";
@@ -456,6 +448,40 @@ jQuery(document).ready(function($){$('#save-post').remove();});
     }
 
     /** 
+     * Retrieve all quotes per author
+     */
+    function get_all_author_quotes( $author_id )
+    {
+      if( is_numeric($author_id) ) {
+        $defaults = array(
+          'post_type' => $this->custom_post_type_name,
+          'author'    => $author_id
+        );
+
+        return get_posts( $defaults );
+      }
+      return false;
+    }
+
+    /** 
+     * Display all quotes from a specific author
+     * useful for displaying quotes in a profile
+     */
+    function display_all_author_quotes( $author_id ) 
+    {
+      $quotes = $this->get_all_author_quotes( $author_id );
+      $nr_quotes = sizeof($quotes); 
+      $quotes_html = ''; 
+      if( $nr_quotes > 0 ) {
+        foreach($quotes as $quote) {
+          $quotes_html .= $this->display_quote( $quote );
+        }
+      }
+      return $quotes_html;  
+    }
+
+
+    /** 
      * Expects a quote object similar to the database object 
      */
     function display_quote( $quote_object ) 
@@ -463,16 +489,18 @@ jQuery(document).ready(function($){$('#save-post').remove();});
       $quote = $quote_object;
       $html = '';
       if( is_object($quote) ) {
-        $source_url = get_post_meta($id, 'bbquotations-source-url', true);
+        $source_url = get_post_meta($quote->ID, 'bbquotations-source-url', true);
         // add the source url if available
         // or else link to the author of the quote 
+        error_log($source_url);
         if( empty($source_url) ) {
           $url = get_author_posts_url($quote->post_author);
           $link = "<a href='$url'>$quote->post_title</a>"; 
         } else {
-          $link = "<a href='$source_url'>$quote->post_title</a>"; 
+          $url = $source_url;
+          $link = "<a href='$url'>$quote->post_title</a>"; 
         }
-        $html .= "<blockquote class='bbquotations' cite='$link'>";
+        $html .= "<blockquote class='bbquotations' cite='$url'>";
         $html .= "<p>";
         $html .= $quote->post_content;
         $html .= "</p>";
@@ -556,7 +584,7 @@ jQuery(document).ready(function($){$('#save-post').remove();});
     {
       $columns = array(
         "cb"           => "<input type=\"checkbox\" />",
-        "id"           => __('Id'),
+        "shortcode"           => __('Shortcode'),
         "title"        => __('Title'),
         "quote"      => __('Quote', $this->localization_domain),
         "author"       => __('Author'),
@@ -579,8 +607,8 @@ jQuery(document).ready(function($){$('#save-post').remove();});
       
       //var_dump($post);
       switch($column) {
-        case 'id':
-          echo $post->ID;
+        case 'shortcode':
+          printf("[bbquote id='%s']", $post->ID);
           break;
         case 'quote':
           echo $post->post_content;
@@ -597,6 +625,14 @@ jQuery(document).ready(function($){$('#save-post').remove();});
 if ( class_exists('bbQuotations') ) { 
   $bbquote_var = new bbQuotations();
   register_activation_hook(__FILE__, array(&$bbquote_var,'activate') ); 
+
+  function bbquotations_display_author_quotes( $author_id) {
+    global $bbquote_var;
+    $quotes = $bbquote_var->display_all_author_quotes( $author_id );
+    echo $quotes;
+  }
+
+
 }
 
 
